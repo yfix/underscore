@@ -1,7 +1,6 @@
 (function() {
 
   module('Objects');
-  /* global iObject, iElement, iArguments, iFunction, iArray, iString, iNumber, iBoolean, iDate, iRegExp, iNaN, iNull, iUndefined, ActiveXObject */
 
   test('keys', function() {
     deepEqual(_.keys({one : 1, two : 2}), ['one', 'two'], 'can extract the keys from an object');
@@ -13,6 +12,24 @@
     deepEqual(_.keys(1), []);
     deepEqual(_.keys('a'), []);
     deepEqual(_.keys(true), []);
+
+    // keys that may be missed if the implementation isn't careful
+    var trouble = {
+      'constructor': Object,
+      'valueOf': _.noop,
+      'hasOwnProperty': null,
+      'toString': 5,
+      'toLocaleString': undefined,
+      'propertyIsEnumerable': /a/,
+      'isPrototypeOf': this,
+      '__defineGetter__': Boolean,
+      '__defineSetter__': {},
+      '__lookupSetter__': false,
+      '__lookupGetter__': []
+    };
+    var troubleKeys = ['constructor', 'valueOf', 'hasOwnProperty', 'toString', 'toLocaleString', 'propertyIsEnumerable',
+                  'isPrototypeOf', '__defineGetter__', '__defineSetter__', '__lookupSetter__', '__lookupGetter__'].sort();
+    deepEqual(_.keys(trouble).sort(), troubleKeys, 'matches non-enumerable properties');
   });
 
   test('values', function() {
@@ -63,7 +80,7 @@
     F.prototype = {a: 'b'};
     var subObj = new F();
     subObj.c = 'd';
-    deepEqual(_.extend({}, subObj), {c: 'd'}, 'extend ignores any properties but own from source');
+    deepEqual(_.extend({}, subObj), {a: 'b', c: 'd'}, 'extend copies all properties from source');
 
     try {
       result = {};
@@ -419,9 +436,6 @@
     b = _({x: 1, y: 2}).chain();
     equal(_.isEqual(a.isEqual(b), _(true)), true, '`isEqual` can be chained');
 
-    // Objects from another frame.
-    ok(_.isEqual({}, iObject));
-
     // Objects without a `constructor` property
     if (Object.create) {
         a = Object.create(null, {x: {value: 1, enumerable: true}});
@@ -456,34 +470,9 @@
     ok(!_.isEmpty(args('')), 'non-empty arguments object is not empty');
   });
 
-  // Setup remote variables for iFrame tests.
-  var iframe = document.createElement('iframe');
-  iframe.frameBorder = iframe.height = iframe.width = 0;
-  document.body.appendChild(iframe);
-  var iDoc = (iDoc = iframe.contentDocument || iframe.contentWindow).document || iDoc;
-  iDoc.write(
-    '<script>' +
-    '  parent.iElement   = document.createElement("div");' +
-    '  parent.iArguments = (function(){ return arguments; })(1, 2, 3);' +
-    '  parent.iArray     = [1, 2, 3];' +
-    '  parent.iString    = new String("hello");' +
-    '  parent.iNumber    = new Number(100);' +
-    '  parent.iFunction  = (function(){});' +
-    '  parent.iDate      = new Date();' +
-    '  parent.iRegExp    = /hi/;' +
-    '  parent.iNaN       = NaN;' +
-    '  parent.iNull      = null;' +
-    '  parent.iBoolean   = new Boolean(false);' +
-    '  parent.iUndefined = undefined;' +
-    '  parent.iObject     = {};' +
-    '</script>'
-  );
-  iDoc.close();
-
   test('isElement', function() {
     ok(!_.isElement('div'), 'strings are not dom elements');
     ok(_.isElement(document.body), 'the body tag is a DOM element');
-    ok(_.isElement(iElement), 'even from another frame');
   });
 
   test('isArguments', function() {
@@ -493,16 +482,13 @@
     ok(_.isArguments(args), 'but the arguments object is an arguments object');
     ok(!_.isArguments(_.toArray(args)), 'but not when it\'s converted into an array');
     ok(!_.isArguments([1, 2, 3]), 'and not vanilla arrays.');
-    ok(_.isArguments(iArguments), 'even from another frame');
   });
 
   test('isObject', function() {
     ok(_.isObject(arguments), 'the arguments object is object');
     ok(_.isObject([1, 2, 3]), 'and arrays');
     ok(_.isObject(document.body), 'and DOM element');
-    ok(_.isObject(iElement), 'even from another frame');
     ok(_.isObject(function () {}), 'and functions');
-    ok(_.isObject(iFunction), 'even from another frame');
     ok(!_.isObject(null), 'but not null');
     ok(!_.isObject(undefined), 'and not undefined');
     ok(!_.isObject('string'), 'and not string');
@@ -515,14 +501,12 @@
     ok(!_.isArray(undefined), 'undefined vars are not arrays');
     ok(!_.isArray(arguments), 'the arguments object is not an array');
     ok(_.isArray([1, 2, 3]), 'but arrays are');
-    ok(_.isArray(iArray), 'even from another frame');
   });
 
   test('isString', function() {
     var obj = new String('I am a string object');
     ok(!_.isString(document.body), 'the document body is not a string');
     ok(_.isString([1, 2, 3].join(', ')), 'but strings are');
-    ok(_.isString(iString), 'even from another frame');
     ok(_.isString('I am a string literal'), 'string literals are');
     ok(_.isString(obj), 'so are String objects');
   });
@@ -534,7 +518,6 @@
     ok(_.isNumber(3 * 4 - 7 / 10), 'but numbers are');
     ok(_.isNumber(NaN), 'NaN *is* a number');
     ok(_.isNumber(Infinity), 'Infinity is a number');
-    ok(_.isNumber(iNumber), 'even from another frame');
     ok(!_.isNumber('1'), 'numeric strings are not numbers');
   });
 
@@ -549,15 +532,14 @@
     ok(!_.isBoolean(null), 'null is not a boolean');
     ok(_.isBoolean(true), 'but true is');
     ok(_.isBoolean(false), 'and so is false');
-    ok(_.isBoolean(iBoolean), 'even from another frame');
   });
 
   test('isFunction', function() {
     ok(!_.isFunction(undefined), 'undefined vars are not functions');
     ok(!_.isFunction([1, 2, 3]), 'arrays are not functions');
     ok(!_.isFunction('moe'), 'strings are not functions');
+    ok(!_.isFunction(document.createElement('div')), 'elements are not functions');
     ok(_.isFunction(_.isFunction), 'but functions are');
-    ok(_.isFunction(iFunction), 'even from another frame');
     ok(_.isFunction(function(){}), 'even anonymous ones');
   });
 
@@ -565,13 +547,11 @@
     ok(!_.isDate(100), 'numbers are not dates');
     ok(!_.isDate({}), 'objects are not dates');
     ok(_.isDate(new Date()), 'but dates are');
-    ok(_.isDate(iDate), 'even from another frame');
   });
 
   test('isRegExp', function() {
     ok(!_.isRegExp(_.identity), 'functions are not RegExps');
     ok(_.isRegExp(/identity/), 'but RegExps are');
-    ok(_.isRegExp(iRegExp), 'even from another frame');
   });
 
   test('isFinite', function() {
@@ -595,7 +575,6 @@
     ok(!_.isNaN(null), 'null is not NaN');
     ok(!_.isNaN(0), '0 is not NaN');
     ok(_.isNaN(NaN), 'but NaN is');
-    ok(_.isNaN(iNaN), 'even from another frame');
     ok(_.isNaN(new Number(NaN)), 'wrapped NaN is still NaN');
   });
 
@@ -603,7 +582,6 @@
     ok(!_.isNull(undefined), 'undefined is not null');
     ok(!_.isNull(NaN), 'NaN is not null');
     ok(_.isNull(null), 'but null is');
-    ok(_.isNull(iNull), 'even from another frame');
   });
 
   test('isUndefined', function() {
@@ -613,20 +591,20 @@
     ok(!_.isUndefined(NaN), 'NaN is defined');
     ok(_.isUndefined(), 'nothing is undefined');
     ok(_.isUndefined(undefined), 'undefined is undefined');
-    ok(_.isUndefined(iUndefined), 'even from another frame');
   });
 
-  if (window.ActiveXObject) {
-    test('IE host objects', function() {
-      var xml = new ActiveXObject('Msxml2.DOMDocument.3.0');
-      ok(!_.isNumber(xml));
-      ok(!_.isBoolean(xml));
-      ok(!_.isNaN(xml));
-      ok(!_.isFunction(xml));
-      ok(!_.isNull(xml));
-      ok(!_.isUndefined(xml));
-    });
-  }
+  test('isError', function() {
+    ok(!_.isError(1), 'numbers are not Errors');
+    ok(!_.isError(null), 'null is not an Error');
+    ok(!_.isError(Error), 'functions are not Errors');
+    ok(_.isError(new Error()), 'Errors are Errors');
+    ok(_.isError(new EvalError()), 'EvalErrors are Errors');
+    ok(_.isError(new RangeError()), 'RangeErrors are Errors');
+    ok(_.isError(new ReferenceError()), 'ReferenceErrors are Errors');
+    ok(_.isError(new SyntaxError()), 'SyntaxErrors are Errors');
+    ok(_.isError(new TypeError()), 'TypeErrors are Errors');
+    ok(_.isError(new URIError()), 'URIErrors are Errors');
+  });
 
   test('tap', function() {
     var intercepted = null;

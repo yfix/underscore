@@ -180,7 +180,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Underscore.js <span class="version">(1.6.0)</span>
+      Underscore.js <span class="version">(1.7.0)</span>
     </a>
     <ul class="toc_section">
       <li>&raquo; <a href="https://github.com/jashkenas/underscore">GitHub Repository</a></li>
@@ -260,6 +260,7 @@
       <li>- <a href="#debounce">debounce</a></li>
       <li>- <a href="#once">once</a></li>
       <li>- <a href="#after">after</a></li>
+      <li>- <a href="#before">before</a></li>
       <li>- <a href="#wrap">wrap</a></li>
       <li>- <a href="#negate">negate</a></li>
       <li>- <a href="#compose">compose</a></li>
@@ -308,9 +309,11 @@
       <li>- <a href="#noConflict">noConflict</a></li>
       <li>- <a href="#identity">identity</a></li>
       <li>- <a href="#constant">constant</a></li>
+      <li>- <a href="#noop">noop</a></li>
       <li>- <a href="#times">times</a></li>
       <li>- <a href="#random">random</a></li>
       <li>- <a href="#mixin">mixin</a></li>
+      <li>- <a href="#iteratee">iteratee</a></li>
       <li>- <a href="#uniqueId">uniqueId</a></li>
       <li>- <a href="#escape">escape</a></li>
       <li>- <a href="#unescape">unescape</a></li>
@@ -355,14 +358,14 @@
     </p>
 
     <p>
-      Underscore provides 80-odd functions that support both the usual
-      functional suspects: <b>map</b>, <b>filter</b>, <b>invoke</b> &mdash;
-      as well as more specialized helpers: function binding, javascript
-      templating, deep equality testing, and so on.
+      Underscore provides over 100 functions that support both your favorite
+      workaday functional helpers: <b>map</b>, <b>filter</b>, <b>invoke</b> &mdash;
+      as well as more specialized goodies: function binding, javascript
+      templating, creating quick indexes, deep equality testing, and so on.
     </p>
 
     <p>
-      A complete <a href="test/">Test &amp; Benchmark Suite</a>
+      A complete <a href="test/">Test Suite</a>
       is included for your perusal.
     </p>
 
@@ -371,16 +374,15 @@
     </p>
 
     <p>
-      Enjoying Underscore, and want to turn it up to 11? Try <a href="http://documentcloud.github.io/underscore-contrib/">Underscore-contrib</a>.
+      Enjoying Underscore, and want to <i>turn it up to 11?</i> Try <a href="http://documentcloud.github.io/underscore-contrib/">Underscore-contrib</a>.
     </p>
 
     <p>
       The project is
       <a href="https://github.com/jashkenas/underscore">hosted on GitHub</a>.
       You can report bugs and discuss features on the
-      <a href="https://github.com/jashkenas/underscore/issues">issues page</a>,
-      on Freenode in the <tt>#documentcloud</tt> channel,
-      or send tweets to <a href="https://twitter.com/documentcloud">@documentcloud</a>.
+      <a href="https://github.com/jashkenas/underscore/issues">issues page</a>, or
+      on Freenode in the <tt>#documentcloud</tt> channel.
     </p>
 
     <p>
@@ -391,13 +393,13 @@
 
     <table>
       <tr>
-        <td><a href="underscore.js">Development Version (1.6.0)</a></td>
-        <td><i>44kb, Uncompressed with Plentiful Comments</i></td>
+        <td><a href="underscore.js">Development Version (1.7.0)</a></td>
+        <td><i>46kb, Uncompressed with Plentiful Comments</i></td>
       </tr>
       <tr>
-        <td><a href="underscore-min.js">Production Version (1.6.0)</a></td>
+        <td><a href="underscore-min.js">Production Version (1.7.0)</a></td>
         <td>
-          <i>5.0kb, Minified and Gzipped</i>
+          <i>5.2kb, Minified and Gzipped</i>
           &nbsp;<small>(<a href="underscore-min.map">Source Map</a>)</small>
         </td>
       </tr>
@@ -477,15 +479,15 @@ _.map({one: 1, two: 2, three: 3}, function(num, key){ return num * 3; });
         <b class="header">reduce</b><code>_.reduce(list, iteratee, [memo], [context])</code>
         <span class="alias">Aliases: <b>inject, foldl</b></span>
         <br />
-        Also known as <b>inject</b> and <b>foldl</b>, reduce boils down a <b>list</b> of values into a single value. 
-        <b>Memo</b> is the initial state of the reduction, and each successive step of it should be returned by 
-        <b>iteratee</b>. The iteratee is passed four arguments: the <tt>memo</tt>, then the <tt>value</tt> and 
-        <tt>index</tt> (or key) of the iteration, and finally a reference to the entire <tt>list</tt>. 
+        Also known as <b>inject</b> and <b>foldl</b>, reduce boils down a <b>list</b> of values into a single value.
+        <b>Memo</b> is the initial state of the reduction, and each successive step of it should be returned by
+        <b>iteratee</b>. The iteratee is passed four arguments: the <tt>memo</tt>, then the <tt>value</tt> and
+        <tt>index</tt> (or key) of the iteration, and finally a reference to the entire <tt>list</tt>.
       </p>
       <p>
-        If no memo is passed to the initial invocation of reduce, the iteratee is not invoked on the first element 
-        of the list. The first element is instead passed as the memo in the invocation of the iteratee on the next 
-        element in the list. 
+        If no memo is passed to the initial invocation of reduce, the iteratee is not invoked on the first element
+        of the list. The first element is instead passed as the memo in the invocation of the iteratee on the next
+        element in the list.
       </p>
       <pre>
 var sum = _.reduce([1, 2, 3], function(memo, num){ return memo + num; }, 0);
@@ -1091,7 +1093,8 @@ add5(10);
         <b>hashFunction</b>, it will be used to compute the hash key for storing
         the result, based on the arguments to the original function. The default
         <b>hashFunction</b> just uses the first argument to the memoized function
-        as the key.
+        as the key. The cache of memoized values is available as the <tt>cache</tt>
+        property on the returned function.
       </p>
       <pre>
 var fibonacci = _.memoize(function(n) {
@@ -1202,6 +1205,21 @@ _.each(notes, function(note) {
   note.asyncSave({success: renderNotes});
 });
 // renderNotes is run once, after all notes have saved.
+</pre>
+
+      <p id="before">
+        <b class="header">before</b><code>_.before(count, function)</code>
+        <br />
+        Creates a version of the function that can be called no more than
+        <b>count</b> times. The result of the last function call is memoized and
+        returned when <b>count</b> has been reached.
+      </p>
+      <pre>
+var monthlyMeeting = _.before(3, askForRaise);
+monthlyMeeting();
+monthlyMeeting();
+monthlyMeeting();
+// the result of any subsequent calls is the same as the second call
 </pre>
 
       <p id="wrap">
@@ -1618,7 +1636,8 @@ _.isUndefined(window.missingVariable);
         a reference to the <b>Underscore</b> object.
       </p>
       <pre>
-var underscore = _.noConflict();</pre>
+var underscore = _.noConflict();
+</pre>
 
       <p id="identity">
         <b class="header">identity</b><code>_.identity(value)</code>
@@ -1631,7 +1650,8 @@ var underscore = _.noConflict();</pre>
       <pre>
 var moe = {name: 'moe'};
 moe === _.identity(moe);
-=&gt; true</pre>
+=&gt; true
+</pre>
 
       <p id="constant">
         <b class="header">constant</b><code>_.constant(value)</code>
@@ -1650,6 +1670,9 @@ moe === _.constant(moe)();
         Returns <tt>undefined</tt> irrespective of the arguments passed to it.
         Useful as the default for optional callback arguments.
       </p>
+      <pre>
+obj.initialize = _.noop;
+</pre>
 
       <p id="times">
         <b class="header">times</b><code>_.times(n, iteratee, [context])</code>
@@ -1691,6 +1714,25 @@ _("fabio").capitalize();
 =&gt; "Fabio"
 </pre>
 
+      <p id="iteratee">
+        <b class="header">iteratee</b><code>_.iteratee(value, [context], [argCount])</code>
+        <br />
+        A mostly-internal function to generate callbacks that can be applied
+        to each element in a collection, returning the desired result — either
+        identity, an arbitrary callback, a property matcher, or a property accessor.
+        <br />
+        The full list of Underscore methods that transform predicates
+        through <tt>_.iteratee</tt> is <tt>map</tt>, <tt>find</tt>,
+        <tt>filter</tt>, <tt>reject</tt>, <tt>every</tt>, <tt>some</tt>, <tt>max</tt>,
+        <tt>min</tt>, <tt>sortBy</tt>, <tt>groupBy</tt>, <tt>indexBy</tt>,
+        <tt>countBy</tt>, <tt>sortedIndex</tt>, <tt>partition</tt>, and <tt>unique</tt>.
+      </p>
+      <pre>
+var stooges = [{name: 'curly', age: 25}, {name: 'moe', age: 21}, {name: 'larry', age: 23}];
+_.map(stooges, _.iteratee('age'));
+=&gt; [25, 21, 23];
+</pre>
+
       <p id="uniqueId">
         <b class="header">uniqueId</b><code>_.uniqueId([prefix])</code>
         <br />
@@ -1705,7 +1747,7 @@ _.uniqueId('contact_');
         <b class="header">escape</b><code>_.escape(string)</code>
         <br />
         Escapes a string for insertion into HTML, replacing
-        <tt>&amp;</tt>, <tt>&lt;</tt>, <tt>&gt;</tt>, <tt>&quot;</tt>, and <tt>&#x27;</tt> characters.
+        <tt>&amp;</tt>, <tt>&lt;</tt>, <tt>&gt;</tt>, <tt>&quot;</tt>, <tt>&#96;</tt>, and <tt>&#x27;</tt> characters.
       </p>
       <pre>
 _.escape('Curly, Larry &amp; Moe');
@@ -1716,7 +1758,7 @@ _.escape('Curly, Larry &amp; Moe');
         <br />
         The opposite of <a href="#escape"><b>escape</b></a>, replaces
         <tt>&amp;amp;</tt>, <tt>&amp;lt;</tt>, <tt>&amp;gt;</tt>,
-        <tt>&amp;quot;</tt>, and <tt>&amp;#x27;</tt>
+        <tt>&amp;quot;</tt>, <tt>&amp;#96;</tt> and <tt>&amp;#x27;</tt>
         with their unescaped counterparts.
       </p>
       <pre>
@@ -1749,18 +1791,16 @@ _.now();
 </pre>
 
       <p id="template">
-        <b class="header">template</b><code>_.template(templateString, [data], [settings])</code>
+        <b class="header">template</b><code>_.template(templateString, [settings])</code>
         <br />
         Compiles JavaScript templates into functions that can be evaluated
         for rendering. Useful for rendering complicated bits of HTML from JSON
         data sources. Template functions can both interpolate variables, using
         <tt>&lt;%= &hellip; %&gt;</tt>, as well as execute arbitrary JavaScript code, with
         <tt>&lt;% &hellip; %&gt;</tt>. If you wish to interpolate a value, and have
-        it be HTML-escaped, use <tt>&lt;%- &hellip; %&gt;</tt> When you evaluate a template function, pass in a
-        <b>data</b> object that has properties corresponding to the template's free
-        variables. If you're writing a one-off, you can pass the <b>data</b>
-        object as the second parameter to <b>template</b> in order to render
-        immediately instead of returning a template function.  The <b>settings</b> argument
+        it be HTML-escaped, use <tt>&lt;%- &hellip; %&gt;</tt> When you evaluate a
+        template function, pass in a <b>data</b> object that has properties
+        corresponding to the template's free variables. The <b>settings</b> argument
         should be a hash containing any <tt>_.templateSettings</tt> that should be overridden.
       </p>
 
@@ -1768,10 +1808,6 @@ _.now();
 var compiled = _.template("hello: &lt;%= name %&gt;");
 compiled({name: 'moe'});
 =&gt; "hello: moe"
-
-var list = "&lt;% _.each(people, function(name) { %&gt; &lt;li&gt;&lt;%= name %&gt;&lt;/li&gt; &lt;% }); %&gt;";
-_.template(list, {people: ['moe', 'curly', 'larry']});
-=&gt; "&lt;li&gt;moe&lt;/li&gt;&lt;li&gt;curly&lt;/li&gt;&lt;li&gt;larry&lt;/li&gt;"
 
 var template = _.template("&lt;b&gt;&lt;%- value %&gt;&lt;/b&gt;");
 template({value: '&lt;script&gt;'});
@@ -1817,7 +1853,7 @@ template({name: "Mustache"});
       </p>
 
       <pre>
-_.template("Using 'with': <%= data.answer %>", {answer: 'no'}, {variable: 'data'});
+_.template("Using 'with': <%= data.answer %>", {variable: 'data'})({answer: 'no'});
 =&gt; "Using 'with': no"</pre>
 
       <p>
@@ -1998,6 +2034,67 @@ _([1, 2, 3]).value();
 
       <h2 id="changelog">Change Log</h2>
 
+      <p id="1.7.0">
+        <b class="header">1.7.0</b> &mdash; <small><i>August 26, 2014</i></small> &mdash; <a href="https://github.com/jashkenas/underscore/compare/1.6.0...1.7.0">Diff</a> &mdash; <a href="https://cdn.rawgit.com/jashkenas/underscore/1.7.0/index.html">Docs</a><br />
+        <ul>
+          <li>
+            For consistency and speed across browsers, Underscore now ignores
+            native array methods for <tt>forEach</tt>, <tt>map</tt>, <tt>reduce</tt>,
+            <tt>reduceRight</tt>, <tt>filter</tt>, <tt>every</tt>, <tt>some</tt>,
+            <tt>indexOf</tt>, and <tt>lastIndexOf</tt>. "Sparse" arrays are
+            officially dead in Underscore.
+          </li>
+          <li>
+            Added <tt>_.iteratee</tt> to customize the iterators used by collection
+            functions. Many Underscore methods will take a string argument for easier
+            <tt>_.property</tt>-style lookups, an object for <tt>_.where</tt>-style
+            filtering, or a function as a custom callback.
+          </li>
+          <li>
+            Added <tt>_.before</tt> as a counterpart to <tt>_.after</tt>.
+          </li>
+          <li>
+            Added <tt>_.negate</tt> to invert the truth value of a passed-in
+            predicate.
+          </li>
+          <li>
+            Added <tt>_.noop</tt> as a handy empty placeholder function.
+          </li>
+          <li>
+            <tt>_.isEmpty</tt> now works with <tt>arguments</tt> objects.
+          </li>
+          <li>
+            <tt>_.has</tt> now guards against nullish objects.
+          </li>
+          <li>
+            Override base methods like <tt>each</tt> and <tt>some</tt>
+            and they'll be used internally by other Underscore functions too.
+          </li>
+          <li>
+            The escape functions handle backticks (<tt>`</tt>), to deal with an
+            IE &le; 8 bug.
+          </li>
+          <li>
+            For consistency, <tt>_.union</tt> and <tt>_.difference</tt> now
+            only work with arrays and not variadic args.
+          </li>
+          <li>
+            <tt>_.memoize</tt> exposes the cache of memoized values as a property
+            on the returned function.
+          </li>
+          <li>
+            <tt>_.pick</tt> accepts <tt>iteratee</tt> and <tt>context</tt>
+            arguments for a more advanced callback.
+          </li>
+          <li>
+            Underscore templates no longer accept an initial <tt>data</tt> object.
+            <tt>_.template</tt> always returns a function now.
+          </li>
+          <li>
+            Optimizations and code cleanup aplenty.
+          </li>
+        </ul>
+      </p>
 
       <p id="1.6.0">
         <b class="header">1.6.0</b> &mdash; <small><i>February 10, 2014</i></small> &mdash; <a href="https://github.com/jashkenas/underscore/compare/1.5.2...1.6.0">Diff</a> &mdash; <a href="https://cdn.rawgit.com/jashkenas/underscore/1.6.0/index.html">Docs</a><br />
@@ -2469,7 +2566,7 @@ _([1, 2, 3]).value();
         first being called a specified number of times.
         <tt>_.invoke</tt> can now take a direct function reference.
         <tt>_.every</tt> now requires an iterator function to be passed, which
-        mirrors the ECMA5 API.
+        mirrors the ES5 API.
         <tt>_.extend</tt> no longer copies keys when the value is undefined.
         <tt>_.bind</tt> now errors when trying to bind an undefined value.
       </p>
@@ -2480,10 +2577,10 @@ _([1, 2, 3]).value();
         representing default options.
         Added an <tt>_.once</tt> function, for manufacturing functions that should
         only ever execute a single time.
-        <tt>_.bind</tt> now delegates to the native ECMAScript 5 version,
+        <tt>_.bind</tt> now delegates to the native ES5 version,
         where available.
         <tt>_.keys</tt> now throws an error when used on non-Object values, as in
-        ECMAScript 5.
+        ES5.
         Fixed a bug with <tt>_.keys</tt> when used over sparse arrays.
       </p>
 
@@ -2502,13 +2599,13 @@ _([1, 2, 3]).value();
         In CommonJS, Underscore may now be required with just: <br />
         <tt>var _ = require("underscore")</tt>.
         Added <tt>_.throttle</tt> and <tt>_.debounce</tt> functions.
-        Removed <tt>_.breakLoop</tt>, in favor of an ECMA5-style un-<i>break</i>-able
+        Removed <tt>_.breakLoop</tt>, in favor of an ES5-style un-<i>break</i>-able
         each implementation &mdash; this removes the try/catch, and you'll now have
         better stack traces for exceptions that are thrown within an Underscore iterator.
         Improved the <b>isType</b> family of functions for better interoperability
         with Internet Explorer host objects.
         <tt>_.template</tt> now correctly escapes backslashes in templates.
-        Improved <tt>_.reduce</tt> compatibility with the ECMA5 version:
+        Improved <tt>_.reduce</tt> compatibility with the ES5 version:
         if you don't pass an initial value, the first item in the collection is used.
         <tt>_.each</tt> no longer returns the iterated collection, for improved
         consistency with ES5's <tt>forEach</tt>.
@@ -2531,7 +2628,7 @@ _([1, 2, 3]).value();
       <p id="1.1.0">
         <b class="header">1.1.0</b> &mdash; <small><i>August 18, 2010</i></small> &mdash; <a href="https://github.com/jashkenas/underscore/compare/1.0.4...1.1.0">Diff</a> &mdash; <a href="https://cdn.rawgit.com/jashkenas/underscore/1.1.0/index.html">Docs</a><br />
         The method signature of <tt>_.reduce</tt> has been changed to match
-        the ECMAScript 5 signature, instead of the Ruby/Prototype.js version.
+        the ES5 signature, instead of the Ruby/Prototype.js version.
         This is a backwards-incompatible change. <tt>_.template</tt> may now be
         called with no arguments, and preserves whitespace. <tt>_.contains</tt>
         is a new alias for <tt>_.include</tt>.
@@ -2578,7 +2675,7 @@ _([1, 2, 3]).value();
         safer duck-typing on collection functions, and cleaner internals. A new
         <tt>_.mixin</tt> method that allows you to extend Underscore with utility
         functions of your own. Added <tt>_.times</tt>, which works the same as in
-        Ruby or Prototype.js. Native support for ECMAScript 5's <tt>Array.isArray</tt>,
+        Ruby or Prototype.js. Native support for ES5's <tt>Array.isArray</tt>,
         and <tt>Object.keys</tt>.
       </p>
 

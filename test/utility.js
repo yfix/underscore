@@ -37,6 +37,8 @@
   test('property', function() {
     var moe = {name : 'moe'};
     equal(_.property('name')(moe), 'moe', 'should return the property with the given name');
+    equal(_.property('name')(null), undefined, 'should return undefined for null values');
+    equal(_.property('name')(undefined), undefined, 'should return undefined for undefined values');
   });
 
   test('random', function() {
@@ -266,6 +268,33 @@
     strictEqual(_.result(obj, 'y'), 'x');
     strictEqual(_.result(obj, 'z'), undefined);
     strictEqual(_.result(null, 'x'), undefined);
+  });
+
+  test('result returns a default value if object is null or undefined', function() {
+    strictEqual(_.result(null, 'b', 'default'), 'default');
+    strictEqual(_.result(undefined, 'c', 'default'), 'default');
+    strictEqual(_.result(''.match('missing'), 1, 'default'), 'default');
+  });
+
+  test('result returns a default value if property of object is missing', function() {
+    strictEqual(_.result({d: null}, 'd', 'default'), null);
+    strictEqual(_.result({e: false}, 'e', 'default'), false);
+  });
+
+  test('result only returns the default value if the object does not have the property or is undefined', function() {
+    strictEqual(_.result({}, 'b', 'default'), 'default');
+    strictEqual(_.result({d: undefined}, 'd', 'default'), 'default');
+  });
+
+  test('result does not return the default if the property of an object is found in the prototype', function() {
+    var Foo = function(){};
+    Foo.prototype.bar = 1;
+    strictEqual(_.result(new Foo, 'bar', 2), 1);
+  });
+
+  test('result does use the fallback when the result of invoking the property is undefined', function() {
+    var obj = {a: function() {}};
+    strictEqual(_.result(obj, 'a', 'failed'), undefined);
   });
 
   test('_.templateSettings.variable', function() {

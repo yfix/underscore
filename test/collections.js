@@ -41,6 +41,20 @@
     answers = 0;
     _.each(b, function(){ ++answers; });
     equal(answers, 100, 'enumerates [0, length)');
+
+
+    var collection = [1, 2, 3], count = 0;
+    _.each(collection, function() {
+      if (count < 10) collection.push(count++);
+    });
+    equal(count, 3);
+
+    collection = {a: 1, b: 2, c: 3};
+    count = 0;
+    _.each(collection, function() {
+      if (count < 10) collection[count] = count++;
+    });
+    equal(count, 3);
   });
 
   test('forEach', function() {
@@ -65,12 +79,7 @@
     doubled = _([1, 2, 3]).map(function(num){ return num * 2; });
     deepEqual(doubled, [2, 4, 6], 'OO-style doubled numbers');
 
-    if (document.querySelectorAll) {
-      var ids = _.map(document.querySelectorAll('#map-test *'), function(n){ return n.id; });
-      deepEqual(ids, ['id1', 'id2'], 'Can use collection methods on NodeLists.');
-    }
-
-    ids = _.map({length: 2, 0: {id: '1'}, 1: {id: '2'}}, function(n){
+    var ids = _.map({length: 2, 0: {id: '1'}, 1: {id: '2'}}, function(n){
       return n.id;
     });
     deepEqual(ids, ['1', '2'], 'Can use collection methods on Array-likes.');
@@ -114,8 +123,8 @@
     equal(_.reduce([], _.noop, undefined), undefined, 'undefined can be passed as a special case');
     equal(_.reduce([_], _.noop), _, 'collection of length one with no initial value returns the first item');
 
-    raises(function() { _.reduce([], _.noop); }, TypeError, 'throws an error for empty arrays with no initial value');
-    raises(function() {_.reduce(null, _.noop);}, TypeError, 'handles a null (without initial value) properly');
+    throws(function() { _.reduce([], _.noop); }, TypeError, 'throws an error for empty arrays with no initial value');
+    throws(function() {_.reduce(null, _.noop);}, TypeError, 'handles a null (without initial value) properly');
   });
 
   test('foldl', function() {
@@ -137,8 +146,8 @@
 
     equal(_.reduceRight([], _.noop, undefined), undefined, 'undefined can be passed as a special case');
 
-    raises(function() { _.reduceRight([], _.noop); }, TypeError, 'throws an error for empty arrays with no initial value');
-    raises(function() {_.reduceRight(null, _.noop);}, TypeError, 'handles a null (without initial value) properly');
+    throws(function() { _.reduceRight([], _.noop); }, TypeError, 'throws an error for empty arrays with no initial value');
+    throws(function() {_.reduceRight(null, _.noop);}, TypeError, 'handles a null (without initial value) properly');
 
     // Assert that the correct arguments are being passed.
 
@@ -637,12 +646,14 @@
     var numbers = _.toArray({one : 1, two : 2, three : 3});
     deepEqual(numbers, [1, 2, 3], 'object flattened into array');
 
-    // test in IE < 9
-    try {
-      var actual = _.toArray(document.childNodes);
-    } catch(ex) { }
-
-    ok(_.isArray(actual), 'should not throw converting a node list');
+    if (typeof document != 'undefined') {
+      // test in IE < 9
+      var actual;
+      try {
+        actual = _.toArray(document.childNodes);
+      } catch(ex) { }
+      deepEqual(actual, _.map(document.childNodes, _.identity), 'works on NodeList');
+    }
   });
 
   test('size', function() {
@@ -692,5 +703,27 @@
       equal(this, predicate);
     }, predicate);
   });
+
+  if (typeof document != 'undefined') {
+    test('Can use various collection methods on NodeLists', function() {
+        var parent = document.createElement('div');
+        parent.innerHTML = '<span id=id1></span>textnode<span id=id2></span>';
+
+        var elementChildren = _.filter(parent.childNodes, _.isElement);
+        equal(elementChildren.length, 2);
+
+        deepEqual(_.map(elementChildren, 'id'), ['id1', 'id2']);
+        deepEqual(_.map(parent.childNodes, 'nodeType'), [1, 3, 1]);
+
+        ok(!_.every(parent.childNodes, _.isElement));
+        ok(_.some(parent.childNodes, _.isElement));
+
+        function compareNode(node) {
+          return _.isElement(node) ? node.id.charAt(2) : void 0;
+        }
+        equal(_.max(parent.childNodes, compareNode), _.last(parent.childNodes));
+        equal(_.min(parent.childNodes, compareNode), _.first(parent.childNodes));
+    });
+  }
 
 }());
