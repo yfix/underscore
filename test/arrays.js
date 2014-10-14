@@ -79,6 +79,12 @@
   });
 
   test('flatten', function() {
+    deepEqual(_.flatten(null), [], 'Flattens supports null');
+    deepEqual(_.flatten(void 0), [], 'Flattens supports undefined');
+
+    deepEqual(_.flatten([[], [[]], []]), [], 'Flattens empty arrays');
+    deepEqual(_.flatten([[], [[]], []], true), [[]], 'Flattens empty arrays');
+
     var list = [1, [2], [3, [[[4]]]]];
     deepEqual(_.flatten(list), [1, 2, 3, 4], 'can flatten nested arrays');
     deepEqual(_.flatten(list, true), [1, 2, 3, [[[4]]]], 'can shallowly flatten nested arrays');
@@ -86,6 +92,11 @@
     deepEqual(result, [1, 2, 3, 4], 'works on an arguments object');
     list = [[1], [2], [3], [[4]]];
     deepEqual(_.flatten(list, true), [1, 2, 3, [4]], 'can shallowly flatten arrays containing only other arrays');
+
+    equal(_.flatten([_.range(10), _.range(10), 5, 1, 3], true).length, 23);
+    equal(_.flatten([_.range(10), _.range(10), 5, 1, 3]).length, 23);
+    equal(_.flatten([new Array(1000000), _.range(56000), 5, 1, 3]).length, 1056003, 'Flatten can handle massive collections');
+    equal(_.flatten([new Array(1000000), _.range(56000), 5, 1, 3], true).length, 1056003, 'Flatten can handle massive collections');
   });
 
   test('without', function() {
@@ -115,6 +126,20 @@
     iterator = function(value) { return value + 1; };
     list = [1, 2, 2, 3, 4, 4];
     deepEqual(_.uniq(list, true, iterator), [1, 2, 3, 4], 'iterator works with sorted array');
+
+    var kittens = [
+      {kitten: 'Celery', cuteness: 8},
+      {kitten: 'Juniper', cuteness: 10},
+      {kitten: 'Spottis', cuteness: 10}
+    ];
+
+    var expected = [
+      {kitten: 'Celery', cuteness: 8},
+      {kitten: 'Juniper', cuteness: 10}
+    ];
+
+    deepEqual(_.uniq(kittens, true, 'cuteness'), expected, 'string iterator works with sorted array');
+
 
     var result = (function(){ return _.uniq(arguments); }(1, 2, 1, 3, 1, 4));
     deepEqual(result, [1, 2, 3, 4], 'works on an arguments object');
@@ -240,7 +265,14 @@
     equal(_.indexOf(numbers, 2), 1, 'can compute indexOf');
     var result = (function(){ return _.indexOf(arguments, 2); }(1, 2, 3));
     equal(result, 1, 'works on an arguments object');
-    equal(_.indexOf(null, 2), -1, 'handles nulls properly');
+
+    _.each([null, void 0, [], false], function(val) {
+      var msg = 'Handles: ' + (_.isArray(val) ? '[]' : val);
+      equal(_.indexOf(val, 2), -1, msg);
+      equal(_.indexOf(val, 2, -1), -1, msg);
+      equal(_.indexOf(val, 2, -20), -1, msg);
+      equal(_.indexOf(val, 2, 15), -1, msg);
+    });
 
     var num = 35;
     numbers = [10, 20, 30, 40, 50];
@@ -287,7 +319,14 @@
     equal(_.lastIndexOf(numbers, 0), 8, 'lastIndexOf the other element');
     var result = (function(){ return _.lastIndexOf(arguments, 1); }(1, 0, 1, 0, 0, 1, 0, 0, 0));
     equal(result, 5, 'works on an arguments object');
-    equal(_.lastIndexOf(null, 2), -1, 'handles nulls properly');
+
+    _.each([null, void 0, [], false], function(val) {
+      var msg = 'Handles: ' + (_.isArray(val) ? '[]' : val);
+      equal(_.lastIndexOf(val, 2), -1, msg);
+      equal(_.lastIndexOf(val, 2, -1), -1, msg);
+      equal(_.lastIndexOf(val, 2, -20), -1, msg);
+      equal(_.lastIndexOf(val, 2, 15), -1, msg);
+    });
 
     numbers = [1, 2, 3, 1, 2, 3, 1, 2, 3];
     var index = _.lastIndexOf(numbers, 2, 2);

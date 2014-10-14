@@ -18,21 +18,16 @@
   "version": "1.7.0",
   "devDependencies": {
     "docco": "0.6.x",
-    "phantomjs": "1.9.7-1",
-    "uglify-js": "2.4.x",
-    "eslint": "0.6.x"
+    "eslint": "0.6.x",
+    "phantomjs": "~1.9.9",
+    "uglify-js": "2.4.x"
   },
   "scripts": {
     "test": "phantomjs test/vendor/runner.js test/index.html?noglobals=true && eslint underscore.js test/*.js test/vendor/runner.js",
     "build": "uglifyjs underscore.js -c \"evaluate=false\" --comments \"/    .*/\" -m --source-map underscore-min.map -o underscore-min.js",
     "doc": "docco underscore.js"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://raw.github.com/jashkenas/underscore/master/LICENSE"
-    }
-  ],
+  "license": "MIT",
   "files": [
     "underscore.js",
     "underscore-min.js",

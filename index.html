@@ -465,9 +465,10 @@ _.each({one: 1, two: 2, three: 3}, alert);
         <span class="alias">Alias: <b>collect</b></span>
         <br />
         Produces a new array of values by mapping each value in <b>list</b>
-        through a transformation function (<b>iteratee</b>). If <b>list</b>
-        is a JavaScript object, <b>iteratee</b>'s arguments will be
-        <tt>(value, key, list)</tt>.
+        through a transformation function (<b>iteratee</b>). The <tt>iteratee</tt>
+        is passed three arguments: the <tt>value</tt>, then the <tt>index</tt>
+        (or <tt>key</tt>) of the iteration, and finally a reference to the entire
+        <tt>list</tt>.
       </p>
       <pre>
 _.map([1, 2, 3], function(num){ return num * 3; });
@@ -1426,8 +1427,8 @@ _.has({a: 1, b: 2, c: 3}, "b");
         property of any passed-in object.
       </p>
       <pre>
-var moe = {name: 'moe'};
-'moe' === _.property('name')(moe);
+var stooge = {name: 'moe'};
+'moe' === _.property('name')(stooge);
 =&gt; true</pre>
 
       <p id="matches">
@@ -1447,11 +1448,11 @@ var readyToGoList = _.filter(list, ready);</pre>
         if they should be considered equal.
       </p>
       <pre>
-var moe   = {name: 'moe', luckyNumbers: [13, 27, 34]};
-var clone = {name: 'moe', luckyNumbers: [13, 27, 34]};
-moe == clone;
+var stooge = {name: 'moe', luckyNumbers: [13, 27, 34]};
+var clone  = {name: 'moe', luckyNumbers: [13, 27, 34]};
+stooge == clone;
 =&gt; false
-_.isEqual(moe, clone);
+_.isEqual(stooge, clone);
 =&gt; true
 </pre>
 
@@ -1648,8 +1649,8 @@ var underscore = _.noConflict();
         a default iteratee.
       </p>
       <pre>
-var moe = {name: 'moe'};
-moe === _.identity(moe);
+var stooge = {name: 'moe'};
+stooge === _.identity(stooge);
 =&gt; true
 </pre>
 
@@ -1660,8 +1661,8 @@ moe === _.identity(moe);
         argument of <tt>_.constant</tt>.
       </p>
       <pre>
-var moe = {name: 'moe'};
-moe === _.constant(moe)();
+var stooge = {name: 'moe'};
+stooge === _.constant(stooge)();
 =&gt; true</pre>
 
       <p id="noop">
@@ -1798,7 +1799,7 @@ _.now();
         data sources. Template functions can both interpolate variables, using
         <tt>&lt;%= &hellip; %&gt;</tt>, as well as execute arbitrary JavaScript code, with
         <tt>&lt;% &hellip; %&gt;</tt>. If you wish to interpolate a value, and have
-        it be HTML-escaped, use <tt>&lt;%- &hellip; %&gt;</tt> When you evaluate a
+        it be HTML-escaped, use <tt>&lt;%- &hellip; %&gt;</tt>. When you evaluate a
         template function, pass in a <b>data</b> object that has properties
         corresponding to the template's free variables. The <b>settings</b> argument
         should be a hash containing any <tt>_.templateSettings</tt> that should be overridden.
@@ -1828,12 +1829,12 @@ compiled({epithet: "stooge"});
         template settings to use different symbols to set off interpolated code.
         Define an <b>interpolate</b> regex to match expressions that should be
         interpolated verbatim, an <b>escape</b> regex to match expressions that should
-        be inserted after being HTML escaped, and an <b>evaluate</b> regex to match
+        be inserted after being HTML-escaped, and an <b>evaluate</b> regex to match
         expressions that should be evaluated without insertion into the resulting
         string. You may define or omit any combination of the three.
         For example, to perform
-        <a href="https://github.com/janl/mustache.js#readme">Mustache.js</a>
-        style templating:
+        <a href="https://github.com/janl/mustache.js#readme">Mustache.js</a>-style
+        templating:
       </p>
 
       <pre>
@@ -1847,7 +1848,7 @@ template({name: "Mustache"});
 
       <p>
         By default, <b>template</b> places the values from your data in the local scope
-        via the <tt>with</tt> statement.  However, you can specify a single variable name
+        via the <tt>with</tt> statement. However, you can specify a single variable name
         with the <b>variable</b> setting. This can significantly improve the speed
         at which a template is able to render.
       </p>
@@ -1858,7 +1859,7 @@ _.template("Using 'with': <%= data.answer %>", {variable: 'data'})({answer: 'no'
 
       <p>
         Precompiling your templates can be a big help when debugging errors you can't
-        reproduce.  This is because precompiled templates can provide line numbers and
+        reproduce. This is because precompiled templates can provide line numbers and
         a stack trace, something that is not possible when compiling templates on the client.
         The <b>source</b> property is available on the compiled template
         function for easy precompilation.
