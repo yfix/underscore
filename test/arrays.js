@@ -110,6 +110,24 @@
     equal(_.without(list, list[0]).length, 1, 'ditto.');
   });
 
+  test('sortedIndex', function() {
+    var numbers = [10, 20, 30, 40, 50], num = 35;
+    var indexForNum = _.sortedIndex(numbers, num);
+    equal(indexForNum, 3, '35 should be inserted at index 3');
+
+    var indexFor30 = _.sortedIndex(numbers, 30);
+    equal(indexFor30, 2, '30 should be inserted at index 2');
+
+    var objects = [{x: 10}, {x: 20}, {x: 30}, {x: 40}];
+    var iterator = function(obj){ return obj.x; };
+    strictEqual(_.sortedIndex(objects, {x: 25}, iterator), 2);
+    strictEqual(_.sortedIndex(objects, {x: 35}, 'x'), 3);
+
+    var context = {1: 2, 2: 3, 3: 4};
+    iterator = function(obj){ return this[obj]; };
+    strictEqual(_.sortedIndex([1, 3], 2, iterator, context), 1);
+  });
+
   test('uniq', function() {
     var list = [1, 2, 1, 3, 1, 4];
     deepEqual(_.uniq(list), [1, 2, 3, 4], 'can find the unique values of an unsorted array');
@@ -306,6 +324,9 @@
       strictEqual(_.indexOf(array, 1, fromIndex), 0);
     });
     strictEqual(_.indexOf([1, 2, 3], 1, true), 0);
+	
+    index = _.indexOf([], undefined, true);
+    equal(index, -1, 'empty array with truthy `isSorted` returns -1');
   });
 
   test('lastIndexOf', function() {
@@ -364,6 +385,48 @@
     deepEqual(_.map([-6, -8, -Infinity], function(fromIndex) {
       return _.lastIndexOf(array, 1, fromIndex);
     }), [0, -1, -1]);
+  });
+
+  test('findIndex', function() {
+    var objects = [
+      {'a': 0, 'b': 0},
+      {'a': 1, 'b': 1},
+      {'a': 2, 'b': 2}
+    ];
+
+    equal(_.findIndex(objects, function(obj) {
+      return obj.a === 0;
+    }), 0);
+
+    equal(_.findIndex(objects, function(obj) {
+      return obj.b * obj.a === 4;
+    }), 2);
+
+    equal(_.findIndex(objects, 'a'), 1, 'Uses lookupIterator');
+
+    equal(_.findIndex(objects, function(obj) {
+      return obj.b * obj.a === 5;
+    }), -1);
+
+    equal(_.findIndex(null, _.noop), -1);
+    strictEqual(_.findIndex(objects, function(a) {
+      return a.foo === null;
+    }), -1);
+    _.findIndex([{a: 1}], function(a, key, obj) {
+      equal(key, 0);
+      deepEqual(obj, [{a: 1}]);
+      strictEqual(this, objects, 'called with context');
+    }, objects);
+
+    var sparse = [];
+    sparse[20] = {'a': 2, 'b': 2};
+    equal(_.findIndex(sparse, function(obj) {
+      return obj && obj.b * obj.a === 4;
+    }), 20, 'Works with sparse arrays');
+
+    var array = [1, 2, 3, 4];
+    array.match = 55;
+    strictEqual(_.findIndex(array, function(x) { return x === 55; }), -1, 'doesn\'t match array-likes keys');
   });
 
   test('range', function() {

@@ -32,6 +32,44 @@
     deepEqual(_.keys(trouble).sort(), troubleKeys, 'matches non-enumerable properties');
   });
 
+  test('keysIn', function() {
+    deepEqual(_.keysIn({one : 1, two : 2}), ['one', 'two'], 'can extract the keysIn from an object');
+    // the test above is not safe because it relies on for-in enumeration order
+    var a = []; a[1] = 0;
+    deepEqual(_.keysIn(a), ['1'], 'is not fooled by sparse arrays; see issue #95');
+
+    a.a = a;
+    deepEqual(_.keysIn(a), ['1', 'a'], 'is not fooled by sparse arrays with additional properties');
+
+    _.each([null, void 0, 1, 'a', true, NaN, {}, [], new Number(5), new Date(0)], function(val) {
+      deepEqual(_.keysIn(val), []);
+    });
+
+    // keysIn that may be missed if the implementation isn't careful
+    var trouble = {
+      constructor: Object,
+      valueOf: _.noop,
+      hasOwnProperty: null,
+      toString: 5,
+      toLocaleString: undefined,
+      propertyIsEnumerable: /a/,
+      isPrototypeOf: this
+    };
+    var troubleKeys = ['constructor', 'valueOf', 'hasOwnProperty', 'toString', 'toLocaleString', 'propertyIsEnumerable',
+                  'isPrototypeOf'].sort();
+    deepEqual(_.keysIn(trouble).sort(), troubleKeys, 'matches non-enumerable properties');
+
+    function A() {}
+    A.prototype.foo = 'foo';
+    var b = new A();
+    b.bar = 'bar';
+    deepEqual(_.keysIn(b), ['bar', 'foo'], 'should include inherited keys');
+
+    function y() {}
+    y.x = 'z';
+    deepEqual(_.keysIn(y), ['x'], 'should get keys from constructor');
+  });
+
   test('values', function() {
     deepEqual(_.values({one: 1, two: 2}), [1, 2], 'can extract the values from an object');
     deepEqual(_.values({one: 1, two: 2, length: 3}), [1, 2, 3], '... even when one of them is "length"');
@@ -691,6 +729,46 @@
     //null edge cases
     var oCon = _.matches({'constructor': Object});
     deepEqual(_.map([null, undefined, 5, {}], oCon), [false, false, false, true], 'doesnt fasley match constructor on undefined/null');
+  });
+
+  test('findKey', function() {
+    var objects = {
+      a: {'a': 0, 'b': 0},
+      b: {'a': 1, 'b': 1},
+      c: {'a': 2, 'b': 2}
+    };
+
+    equal(_.findKey(objects, function(obj) {
+      return obj.a === 0;
+    }), 'a');
+
+    equal(_.findKey(objects, function(obj) {
+      return obj.b * obj.a === 4;
+    }), 'c');
+
+    equal(_.findKey(objects, 'a'), 'b', 'Uses lookupIterator');
+
+    equal(_.findKey(objects, function(obj) {
+      return obj.b * obj.a === 5;
+    }), undefined);
+
+    strictEqual(_.findKey([1, 2, 3, 4, 5, 6], function(obj) {
+      return obj === 3;
+    }), '2', 'Keys are strings');
+
+    strictEqual(_.findKey(objects, function(a) {
+      return a.foo === null;
+    }), undefined);
+
+    _.findKey({a: {a: 1}}, function(a, key, obj) {
+      equal(key, 'a');
+      deepEqual(obj, {a: {a: 1}});
+      strictEqual(this, objects, 'called with context');
+    }, objects);
+
+    var array = [1, 2, 3, 4];
+    array.match = 55;
+    strictEqual(_.findKey(array, function(x) { return x === 55; }), 'match', 'matches array-likes keys');
   });
 
 }());

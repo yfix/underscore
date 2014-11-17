@@ -192,6 +192,9 @@
     strictEqual(_.find(array, function(n) { return n > 2; }), 3, 'should return first found `value`');
     strictEqual(_.find(array, function() { return false; }), void 0, 'should return `undefined` if `value` is not found');
 
+    array.dontmatch = 55;
+    strictEqual(_.find(array, function(x) { return x === 55; }), void 0, 'iterates array-likes correctly');
+
     // Matching an object like _.findWhere.
     var list = [{a: 1, b: 2}, {a: 2, b: 2}, {a: 1, b: 3}, {a: 1, b: 4}, {a: 2, b: 4}];
     deepEqual(_.find(list, {a: 1}), {a: 1, b: 2}, 'can be used as findWhere');
@@ -201,6 +204,25 @@
 
     var result = _.find([1, 2, 3], function(num){ return num * 2 === 4; });
     equal(result, 2, 'found the first "2" and broke the loop');
+
+    var obj = {
+      a: {x: 1, z: 3},
+      b: {x: 2, z: 2},
+      c: {x: 3, z: 4},
+      d: {x: 4, z: 1}
+    };
+
+    deepEqual(_.find(obj, {x: 2}), {x: 2, z: 2}, 'works on objects');
+    deepEqual(_.find(obj, {x: 2, z: 1}), void 0);
+    deepEqual(_.find(obj, function(x) {
+      return x.x === 4;
+    }), {x: 4, z: 1});
+
+    _.findIndex([{a: 1}], function(a, key, obj) {
+      equal(key, 0);
+      deepEqual(obj, [{a: 1}]);
+      strictEqual(this, _, 'called with context');
+    }, _);
   });
 
   test('detect', function() {
@@ -589,24 +611,6 @@
     grouped = _.countBy(array);
     equal(grouped['1'], 2);
     equal(grouped['3'], 1);
-  });
-
-  test('sortedIndex', function() {
-    var numbers = [10, 20, 30, 40, 50], num = 35;
-    var indexForNum = _.sortedIndex(numbers, num);
-    equal(indexForNum, 3, '35 should be inserted at index 3');
-
-    var indexFor30 = _.sortedIndex(numbers, 30);
-    equal(indexFor30, 2, '30 should be inserted at index 2');
-
-    var objects = [{x: 10}, {x: 20}, {x: 30}, {x: 40}];
-    var iterator = function(obj){ return obj.x; };
-    strictEqual(_.sortedIndex(objects, {x: 25}, iterator), 2);
-    strictEqual(_.sortedIndex(objects, {x: 35}, 'x'), 3);
-
-    var context = {1: 2, 2: 3, 3: 4};
-    iterator = function(obj){ return this[obj]; };
-    strictEqual(_.sortedIndex([1, 3], 2, iterator, context), 1);
   });
 
   test('shuffle', function() {

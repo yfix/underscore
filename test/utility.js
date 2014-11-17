@@ -40,6 +40,24 @@
     equal(_.property('name')(null), undefined, 'should return undefined for null values');
     equal(_.property('name')(undefined), undefined, 'should return undefined for undefined values');
   });
+  
+  test('propertyOf', function() {
+    var stoogeRanks = _.propertyOf({curly: 2, moe: 1, larry: 3});
+    equal(stoogeRanks('curly'), 2, 'should return the property with the given name');
+    equal(stoogeRanks(null), undefined, 'should return undefined for null values');
+    equal(stoogeRanks(undefined), undefined, 'should return undefined for undefined values');
+    
+    function MoreStooges() { this.shemp = 87; }
+    MoreStooges.prototype = {curly: 2, moe: 1, larry: 3};
+    var moreStoogeRanks = _.propertyOf(new MoreStooges());
+    equal(moreStoogeRanks('curly'), 2, 'should return properties from further up the prototype chain');
+    
+    var nullPropertyOf = _.propertyOf(null);
+    equal(nullPropertyOf('curly'), undefined, 'should return undefined when obj is null');
+    
+    var undefPropertyOf = _.propertyOf(undefined);
+    equal(undefPropertyOf('curly'), undefined, 'should return undefined when obj is undefined');
+  });
 
   test('random', function() {
     var array = _.range(1000);
@@ -295,6 +313,14 @@
   test('result does use the fallback when the result of invoking the property is undefined', function() {
     var obj = {a: function() {}};
     strictEqual(_.result(obj, 'a', 'failed'), undefined);
+  });
+
+  test('result fallback can use a function', function() {
+    var obj = {a: [1, 2, 3]};
+    strictEqual(_.result(obj, 'b', _.constant(5)), 5);
+    strictEqual(_.result(obj, 'b', function() {
+      return this.a;
+    }), obj.a, 'called with context');
   });
 
   test('_.templateSettings.variable', function() {

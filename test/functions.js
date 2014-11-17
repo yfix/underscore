@@ -59,6 +59,20 @@
 
     func = _.partial(function() { return typeof arguments[2]; }, _, 'b', _, 'd');
     equal(func('a'), 'undefined', 'unfilled placeholders are undefined');
+
+    // passes context
+    function MyWidget(name, options) {
+      this.name = name;
+      this.options = options;
+    }
+    MyWidget.prototype.get = function() {
+      return this.name;
+    };
+    var MyWidgetWithCoolOpts = _.partial(MyWidget, _, {a: 1});
+    var widget = new MyWidgetWithCoolOpts('foo');
+    ok(widget instanceof MyWidget, 'Can partially bind a constructor');
+    equal(widget.get(), 'foo', 'keeps prototype');
+    deepEqual(widget.options, {a: 1});
   });
 
   test('bindAll', function() {
@@ -548,6 +562,16 @@
   test('iteratee', function() {
     var identity = _.iteratee();
     equal(identity, _.identity, '_.iteratee is exposed as an external function.');
+
+    function fn() {
+      return arguments;
+    }
+    _.each([_.iteratee(fn), _.iteratee(fn, {})], function(cb) {
+      equal(cb().length, 0);
+      deepEqual(_.toArray(cb(1, 2, 3)), _.range(1, 4));
+      deepEqual(_.toArray(cb(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)), _.range(1, 11));
+    });
+    
   });
 
 }());
